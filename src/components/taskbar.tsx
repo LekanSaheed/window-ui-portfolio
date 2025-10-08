@@ -15,7 +15,7 @@ const TaskBar: FunctionComponent<{
   clickFunctions: { onStartMenuClick: VoidFunction };
   state: { startMenu: boolean };
 }> = ({ clickFunctions, state }) => {
-  const { tasks, registerTask, minimizeTask } = useTask();
+  const { tasks, registerTask, minimizeTask, activeTask } = useTask();
   return (
     <div
       className="dark:bg-gray-900/90 backdrop-blur-[10px] 
@@ -52,9 +52,11 @@ const TaskBar: FunctionComponent<{
           transition={{ type: "tween" }}
           className="ml-1 flex gap-1"
         >
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="sync">
             {tasks.map((task) => {
               const isOpen = task.state === "open";
+
+              const isActive = activeTask === task.id;
               return (
                 <motion.li
                   transition={{ type: "tween" }}
@@ -68,7 +70,9 @@ const TaskBar: FunctionComponent<{
                     }
                   }}
                   className={`inline-flex flex-col items-center mr-[5px]  justify-center size-[38px] 
-       cursor-pointer ui-button ${isOpen ? "ui-button-no-hover" : ""}`}
+       cursor-pointer ui-button ${
+         isOpen && isActive ? "ui-button-no-hover" : ""
+       }`}
                 >
                   <motion.span className="block" whileTap={{ scale: 0.8 }}>
                     <span className="relative block size-[26px] pointer-events-none">

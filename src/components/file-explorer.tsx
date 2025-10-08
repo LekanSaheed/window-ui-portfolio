@@ -101,7 +101,7 @@ const FileExplorer: FunctionComponent<{
     <AnimatePresence>
       {open && (
         <div
-          style={{ zIndex: maximized ? 101 : isActive ? 102 : 10 }}
+          style={{ zIndex: maximized ? 97 : isActive ? 98 : 10 }}
           className={`fixed pointer-events-none z-[99] inset-0 flex select-none items-center justify-center `}
         >
           <motion.div
