@@ -85,10 +85,11 @@ const reducer = (state: State, action: Action): State => {
             }
             return task;
           }),
+          activeTask: task.id,
         };
       }
 
-      return { ...state, tasks: [...state.tasks, task] };
+      return { ...state, tasks: [...state.tasks, task], activeTask: task.id };
     }
     case "close-task": {
       return {
@@ -96,7 +97,7 @@ const reducer = (state: State, action: Action): State => {
         tasks: state.tasks.filter((task) => task.id !== action.payload),
       };
     }
-    case "minimize-task":
+    case "minimize-task": {
       return {
         ...state,
         tasks: state.tasks.map((task) => {
@@ -109,6 +110,7 @@ const reducer = (state: State, action: Action): State => {
           return task;
         }),
       };
+    }
     case "set-active-task": {
       return {
         ...state,
