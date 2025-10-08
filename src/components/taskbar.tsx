@@ -19,7 +19,7 @@ const TaskBar: FunctionComponent<{
   return (
     <div
       className="dark:bg-gray-900/90 backdrop-blur-[10px] 
-     fixed bottom-0 left-0 right-0 h-[48px] border-t-[0.3px] border-t-gray-400/30 flex items-center justify-center z-[100]"
+     fixed bottom-0 select-none left-0 right-0 h-[48px] border-t-[0.3px] border-t-gray-400/30 flex items-center justify-center z-[100]"
     >
       <LayoutGroup>
         <motion.div layout="position" transition={{ type: "tween" }}>

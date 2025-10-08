@@ -98,6 +98,14 @@ const reducer = (state: State, action: Action): State => {
       };
     }
     case "minimize-task": {
+      const isActive = action.payload === state.activeTask;
+
+      if (!isActive) {
+        return {
+          ...state,
+          activeTask: action.payload,
+        };
+      }
       return {
         ...state,
         tasks: state.tasks.map((task) => {
