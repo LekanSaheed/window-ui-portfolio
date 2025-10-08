@@ -65,7 +65,10 @@ const Home = () => {
     {
       title: "LinkedIn",
       onClick: () => {
-        window.open("https://github.com/lekansaheed", "_blank");
+        window.open(
+          "https://www.linkedin.com/in/lekan-saheed-90a8a421b",
+          "_blank"
+        );
       },
       thumbnail: "linkedin.webp",
       className: "p-1",

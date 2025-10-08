@@ -17,9 +17,11 @@ import { IoIosSquareOutline } from "react-icons/io";
 import { MdOutlineRefresh } from "react-icons/md";
 import { VscChromeRestore } from "react-icons/vsc";
 
+type FolderType = "folder" | "link";
+
 export interface IExplorerFolder {
   displayName: string;
-  type: "folder" | "link";
+  type: FolderType;
   path?: string;
 }
 
@@ -29,7 +31,7 @@ const FileExplorer: FunctionComponent<{
 }> = ({ id, folders = [] }) => {
   const controls = useDragControls();
 
-  const { getTask, closeTask, minimizeTask } = useTask();
+  const { getTask, closeTask, minimizeTask, setActive, activeTask } = useTask();
 
   const [maximized, setMaximized] = useState(false);
 
@@ -37,6 +39,7 @@ const FileExplorer: FunctionComponent<{
 
   const open = !!task && task?.state === "open";
 
+  console.log(task);
   const rightHeaderActions: { icon: IconType; onClick: VoidFunction }[] = [
     { icon: BsDash, onClick: () => minimizeTask(id) },
     {
@@ -62,11 +65,17 @@ const FileExplorer: FunctionComponent<{
 
   const rowRefs = useRef<(HTMLTableRowElement | null)[]>([]);
 
-  const handleClick = () => {
+  const handleClick = (folder: IExplorerFolder) => {
     console.log("Clicekd");
+
+    if (folder?.type === "link") {
+      window.open(folder?.path, "_blank");
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    const folder = folders.at(index);
+
     if (e.key === "ArrowDown") {
       e.preventDefault();
       const next = Math.min(folders.length - 1, index + 1);
@@ -82,28 +91,54 @@ const FileExplorer: FunctionComponent<{
       e.preventDefault();
 
       console.log(index);
-      handleClick();
+      handleClick(folder!);
     }
   };
+
+  const isActive = activeTask === id;
 
   return (
     <AnimatePresence>
       {open && (
         <div
-          className={`fixed pointer-events-none z-[99] inset-0 flex select-none items-center justify-center ${
-            maximized ? "z-[101]" : ""
-          }`}
+          style={{ zIndex: maximized ? 101 : isActive ? 80 : 10 }}
+          className={`fixed pointer-events-none z-[99] inset-0 flex select-none items-center justify-center `}
         >
           <motion.div
-            initial={{ scale: 0.6, opacity: 0, y: 100 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.7, opacity: 0, y: 100 }}
-            style={{ transformOrigin: "bottom center" }}
+            initial={{
+              scale: 0.6,
+              opacity: 0,
+              y: 100,
+              marginTop: 0,
+              marginLeft: 0,
+            }}
+            animate={{
+              scale: 1,
+              opacity: 1,
+              y: 0,
+              marginTop: maximized ? 0 : task?.initialCordinates?.y,
+              marginLeft: maximized ? 0 : task?.initialCordinates?.x,
+            }}
+            exit={{
+              scale: 0.7,
+              opacity: 0,
+              y: 100,
+              marginTop: 0,
+              marginLeft: 0,
+            }}
+            style={{
+              transformOrigin: "bottom center",
+            }}
             transition={{ duration: 0.1, type: "tween" }}
             drag
             dragControls={controls}
             dragMomentum={false}
             dragListener={false}
+            onPointerDown={() => {
+              if (!isActive) {
+                setActive(id);
+              }
+            }}
             className={`${
               !maximized
                 ? "max-w-[700px] w-full h-[500px] rounded-[10px] border-[0.5px] border-gray-600/60 "
@@ -198,7 +233,7 @@ const FileExplorer: FunctionComponent<{
                         <Fragment key={id}>
                           <tr
                             onDoubleClick={() => {
-                              handleClick();
+                              handleClick(folder);
                             }}
                             ref={(el) => {
                               rowRefs.current[id] = el;
@@ -218,7 +253,9 @@ const FileExplorer: FunctionComponent<{
                                     src={"/app-icons/folder.png"}
                                     alt=""
                                     priority
+                                    placeholder="blur"
                                     fill
+                                    blurDataURL={"/app-icons/folder.png"}
                                   />
                                 </div>
                                 {folder?.displayName}

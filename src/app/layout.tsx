@@ -29,16 +29,21 @@ interface Task {
   id: TaskId;
   thumbnail: string;
   displayName: string;
+  initialCordinates: {
+    x: number;
+    y: number;
+  };
 }
 
 type TaskState = "open" | "minimized";
 
-type State = { tasks: Task[] };
+type State = { tasks: Task[]; activeTask: TaskId };
 
 type Action =
-  | { type: "register"; payload: Omit<Task, "state"> }
+  | { type: "register"; payload: Omit<Task, "state" | "initialCordinates"> }
   | { type: "close-task"; payload: TaskId }
-  | { type: "minimize-task"; payload: TaskId };
+  | { type: "minimize-task"; payload: TaskId }
+  | { type: "set-active-task"; payload: TaskId };
 
 export interface AppContextType {
   state: State;
@@ -51,6 +56,22 @@ const reducer = (state: State, action: Action): State => {
       const task = { ...action.payload, state: "open" } as Task;
 
       const existingTask = state.tasks.find((t) => t.id === action.payload.id);
+
+      const noTask = state.tasks.length < 1;
+
+      const lastTask = state.tasks[state.tasks.length - 1];
+
+      if (noTask) {
+        task.initialCordinates = {
+          x: 0,
+          y: 0,
+        };
+      } else {
+        task.initialCordinates = {
+          x: lastTask.initialCordinates?.x + 70,
+          y: lastTask.initialCordinates?.y + 70,
+        };
+      }
 
       if (!!existingTask) {
         return {
@@ -88,6 +109,12 @@ const reducer = (state: State, action: Action): State => {
           return task;
         }),
       };
+    case "set-active-task": {
+      return {
+        ...state,
+        activeTask: action.payload,
+      };
+    }
     default:
       return state;
   }
@@ -98,6 +125,7 @@ const AppContext = createContext<AppContextType>({} as AppContextType);
 const AppProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, {
     tasks: [],
+    activeTask: "" as TaskId,
   });
 
   return (
@@ -147,7 +175,19 @@ export const useTask = () => {
     dispatch({ type: "minimize-task", payload: id });
   };
 
-  return { getTask, registerTask, closeTask, tasks: state.tasks, minimizeTask };
+  const setActive = (id: TaskId) => {
+    dispatch({ type: "set-active-task", payload: id });
+  };
+
+  return {
+    getTask,
+    registerTask,
+    closeTask,
+    tasks: state.tasks,
+    minimizeTask,
+    setActive,
+    activeTask: state.activeTask,
+  };
 
   // const findTask = state.tasks.
 };
@@ -172,6 +212,11 @@ export default function RootLayout({
       displayName: "InflowBit (Formerly InflowChange)",
       type: "link",
       path: "https://inflowbit.com",
+    },
+    {
+      displayName: "Cloudax",
+      type: "link",
+      path: "https://www.cloudax.io",
     },
   ];
 
